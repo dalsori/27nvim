@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  syntax:
+    name: Sintaxis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
+
+      - name: Comprobar que todo parsea
+        run: nvim --headless -l tests/syntax.lua
+
+  boot:
+    name: Arranque (${{ matrix.nvim }})
+    runs-on: ubuntu-latest
+    needs: syntax
+    strategy:
+      fail-fast: false
+      matrix:
+        nvim: [stable, nightly]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: ${{ matrix.nvim }}
+
+      - name: Colocar la config en XDG_CONFIG_HOME
+        run: |
+          mkdir -p "$HOME/.config"
+          cp -r "$GITHUB_WORKSPACE" "$HOME/.config/nvim"
+          rm -rf "$HOME/.config/nvim/.git"
+
+      # lazy-lock.json fija las versiones, asi que el cache es valido
+      # mientras no cambie el lockfile.
+      - name: Cachear plugins
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/nvim
+            ~/.cache/nvim
+          key: nvim-${{ matrix.nvim }}-${{ hashFiles('lazy-lock.json') }}
+          restore-keys: nvim-${{ matrix.nvim }}-
+
+      - name: Instalar plugins
+        run: nvim --headless "+Lazy! sync" +qa
+
+      - name: Verificar que la config arranca limpia
+        run: nvim --headless -c "lua dofile('tests/health.lua')" -c 'qa!'

@@ -13,6 +13,7 @@
 
 A fast, modular Neovim setup for full-stack and systems development.
 
+[![CI](https://github.com/27te/27nvim/actions/workflows/ci.yml/badge.svg)](https://github.com/27te/27nvim/actions/workflows/ci.yml)
 ![Neovim](https://img.shields.io/badge/Neovim-0.10+-57A143?style=flat&logo=neovim&logoColor=white)
 ![Lua](https://img.shields.io/badge/Lua-5.1-2C2D72?style=flat&logo=lua&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat)
@@ -326,6 +327,26 @@ $env:OPENAI_API_KEY    = "sk-..."     # optional
 ```
 
 Or permanently via: `Win + R` → `sysdm.cpl` → Advanced → Environment Variables.
+
+## Testing
+
+CI runs on every push against Neovim **stable** and **nightly**, so an upstream
+breaking change surfaces here before it breaks your editor.
+
+```bash
+# Cheap: does every Lua file parse? No plugins, no network.
+nvim --headless -l tests/syntax.lua
+
+# Real: install plugins, then assert the config boots clean.
+nvim --headless "+Lazy! sync" +qa
+nvim --headless -c "lua dofile('tests/health.lua')" -c 'qa!'
+```
+
+`tests/health.lua` checks the things that break silently: that all four root
+modules load, that `mapleader` is set *before* lazy.nvim (otherwise every plugin
+keymap binds to the wrong key), that OS detection ran, and that fewer than half
+the plugins load at startup — if that ratio slips, something lost its
+`event`/`ft` guard and startup time is quietly degrading.
 
 ---
 
