@@ -27,7 +27,7 @@
 
 A fast, modular Neovim setup for full-stack and systems development.
 
-[![CI](https://github.com/27te/27nvim/actions/workflows/ci.yml/badge.svg)](https://github.com/27te/27nvim/actions/workflows/ci.yml)
+[![CI](https://github.com/dalsori/27nvim/actions/workflows/ci.yml/badge.svg)](https://github.com/dalsori/27nvim/actions/workflows/ci.yml)
 ![Neovim](https://img.shields.io/badge/Neovim-0.10+-57A143?style=flat&logo=neovim&logoColor=white)
 ![Lua](https://img.shields.io/badge/Lua-5.1-2C2D72?style=flat&logo=lua&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat)
