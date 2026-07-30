@@ -146,13 +146,30 @@ return {
 
   -- ── DATABASE CLIENT ───────────────────────────────────────────────
   {
-    "tpope/vim-dadbod",
-    cmd          = { "DB", "DBUI" },
+    -- El plugin principal es la UI, no dadbod: los comandos DBUI* los
+    -- define ella. Si el spec cuelga de vim-dadbod, lazy sólo crea los
+    -- stubs que se listen aquí y :DBUIToggle da E492.
+    "kristijanhusak/vim-dadbod-ui",
     dependencies = {
-      "kristijanhusak/vim-dadbod-ui",
-      "kristijanhusak/vim-dadbod-completion",
+      { "tpope/vim-dadbod", lazy = true },
+      -- ft propio: la fuente de cmp se registra en after/plugin, así que
+      -- sin esto el autocompletado SQL sólo existiría tras abrir la UI.
+      { "kristijanhusak/vim-dadbod-completion", ft = { "sql", "mysql", "plsql" }, lazy = true },
     },
-    config = function()
+    cmd          = {
+      "DB",
+      "DBUI",
+      "DBUIToggle",
+      "DBUIClose",
+      "DBUIAddConnection",
+      "DBUIFindBuffer",
+      "DBUIRenameBuffer",
+      "DBUILastQueryInfo",
+    },
+    -- init y no config: plugin/db_ui.vim congela los iconos en tiempo de
+    -- carga (`if g:db_ui_use_nerd_fonts`), así que ponerlo después no
+    -- tenía efecto.
+    init         = function()
       vim.g.db_ui_save_location  = vim.fn.stdpath "data" .. "/db_ui"
       vim.g.db_ui_use_nerd_fonts = 1
     end,
