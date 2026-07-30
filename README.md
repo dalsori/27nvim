@@ -55,85 +55,198 @@ A fast, modular Neovim setup for full-stack and systems development.
 - `cmake` (for telescope-fzf-native on Windows)
 - `node` + `npm` (for LSP servers and formatters)
 - `ripgrep` + `fd` (Telescope live grep)
+- `unzip` / `tar` (Mason los usa para descomprimir LSP y formateadores)
 - **Opcionales por stack:** JDK 21+ (`jdtls` Java LSP) · `cargo-nextest` (tests de Rust con neotest) · `lazydocker` (UI de Docker) · Xdebug (debug de PHP)
 
 ## Installation
 
-### Linux / macOS
+En los tres sistemas los pasos son los mismos:
+
+1. Instalar dependencias
+2. Respaldar la config existente
+3. Clonar este repo en la carpeta de config de Neovim
+4. Abrir `nvim` — lazy.nvim y Mason hacen el resto
+
+Elige tu sistema operativo.
+
+### Linux
+
+**1. Dependencias:**
 
 ```bash
-# Backup existing config
-mv ~/.config/nvim ~/.config/nvim.bak
+# Debian / Ubuntu
+sudo apt install git nodejs npm ripgrep fd-find cmake unzip
 
-# Clone
-git clone git@github.com:TU-USER/TU-REPO.git ~/.config/nvim
+# Fedora
+sudo dnf install git nodejs npm ripgrep fd-find cmake unzip
 
-# Open Neovim — plugins install automatically
+# Arch
+sudo pacman -S git nodejs npm ripgrep fd cmake unzip
+```
+
+> **Ojo con la versión de Neovim.** Esta config necesita **>= 0.10** y los repos de
+> Debian/Ubuntu suelen traer una más vieja. Comprueba con `nvim --version`; si se
+> queda corta, usa el AppImage oficial:
+>
+> ```bash
+> curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
+> chmod +x nvim-linux-x86_64.appimage
+> sudo mv nvim-linux-x86_64.appimage /usr/local/bin/nvim
+> ```
+
+En Debian/Ubuntu el binario de `fd` se llama `fdfind`; enlázalo para que Telescope lo encuentre:
+
+```bash
+mkdir -p ~/.local/bin && ln -s "$(which fdfind)" ~/.local/bin/fd
+```
+
+**2. Instala una [Nerd Font](https://www.nerdfonts.com/)** (p. ej. JetBrainsMono Nerd Font) y actívala en tu terminal. Sin esto los iconos se ven como cuadros.
+
+**3. Clonar y arrancar:**
+
+```bash
+# Respaldar config existente (si la hay)
+[ -d ~/.config/nvim ] && mv ~/.config/nvim ~/.config/nvim.bak
+
+git clone https://github.com/dalsori/27nvim.git ~/.config/nvim
+
+nvim
+```
+
+### macOS
+
+**1. Dependencias** (con [Homebrew](https://brew.sh/)):
+
+```bash
+brew install neovim git node ripgrep fd cmake
+brew install --cask font-jetbrains-mono-nerd-font
+```
+
+Activa la fuente en tu terminal (Terminal.app, iTerm2, Ghostty, WezTerm…).
+
+**2. Clonar y arrancar:**
+
+```bash
+# Respaldar config existente (si la hay)
+[ -d ~/.config/nvim ] && mv ~/.config/nvim ~/.config/nvim.bak
+
+git clone https://github.com/dalsori/27nvim.git ~/.config/nvim
+
 nvim
 ```
 
 ### Windows (Native — Scoop)
 
-> Tested on Windows 10/11 with PowerShell. No WSL required.
+> Probado en Windows 10/11 con PowerShell. No hace falta WSL.
 
-**1. Install Scoop** (if not already installed):
+**1. Instala Scoop** (si no lo tienes):
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
 ```
 
-**2. Install dependencies:**
+**2. Dependencias:**
 
 ```powershell
-# Add buckets
+# Buckets
 scoop bucket add extras
 scoop bucket add nerd-fonts
 
 # Core
 scoop install git neovim nodejs cmake
 
-# Nerd Font (pick one)
+# Nerd Font (elige una)
 scoop install nerd-fonts/JetBrainsMono-NF
 
-# Optional but recommended
+# Opcionales pero recomendados
 scoop install lazygit ripgrep fd
 ```
 
-**3. Clone the config:**
+Activa la Nerd Font en tu terminal: Windows Terminal → Settings → tu perfil → Appearance → Font face.
+
+**3. Clonar y arrancar:**
 
 ```powershell
-# Backup existing config
+# Respaldar config existente (si la hay)
 if (Test-Path $env:LOCALAPPDATA\nvim) {
     Move-Item $env:LOCALAPPDATA\nvim $env:LOCALAPPDATA\nvim.bak
 }
 
-# Clone
-git clone git@github.com:TU-USER/TU-REPO.git $env:LOCALAPPDATA\nvim
-```
+git clone https://github.com/dalsori/27nvim.git $env:LOCALAPPDATA\nvim
 
-**4. Set API keys** (PowerShell — add to your `$PROFILE` to persist):
-
-```powershell
-$env:ANTHROPIC_API_KEY = "sk-ant-..."
-$env:OPENAI_API_KEY    = "sk-..."     # optional
-```
-
-To make them permanent via GUI: `Win + R` → `sysdm.cpl` → Advanced → Environment Variables.
-
-**5. Open Neovim:**
-
-```powershell
 nvim
 ```
 
-Lazy.nvim bootstraps itself, installs all plugins, then Mason installs LSP servers and formatters automatically.
-
-> **Note:** `telescope-fzf-native` requires `cmake` on Windows. The config detects the OS automatically and uses the correct build command.
+> **Nota:** `telescope-fzf-native` necesita `cmake` en Windows. La config detecta el SO automáticamente y usa el comando de build correcto.
 
 ---
 
-Lazy.nvim bootstraps itself on first launch and installs all plugins. LSP servers and formatters install via Mason.
+### Primer arranque
+
+La primera vez que abras `nvim` verás cómo se instala todo: lazy.nvim se
+autoinstala, descarga los plugins y después Mason baja los LSP y formateadores.
+Tarda un par de minutos y es normal ver algún error transitorio mientras faltan
+piezas — reinicia Neovim al terminar.
+
+Luego:
+
+```vim
+:Copilot auth      " login de la IA (avante usa GitHub Copilot por defecto)
+:checkhealth       " verifica dependencias externas (node, rg, fd, cmake…)
+:Lazy              " estado de los plugins
+:Mason             " estado de LSP / formateadores
+```
+
+La IA no necesita API keys: usa la cuenta de GitHub Copilot. Ver [AI Setup](#ai-setup).
+
+## Actualizar
+
+Cuando se publica una versión nueva de la config (temas, plugins, keymaps, la
+mascota del dashboard…), actualizar es un `git pull` en la carpeta de config más
+un sync de plugins.
+
+**Linux / macOS:**
+
+```bash
+cd ~/.config/nvim
+git pull
+nvim --headless "+Lazy! sync" +qa    # instala / actualiza / limpia plugins según lazy-lock.json
+```
+
+**Windows (PowerShell):**
+
+```powershell
+cd $env:LOCALAPPDATA\nvim
+git pull
+nvim --headless "+Lazy! sync" +qa
+```
+
+Después abre `nvim` normal. Si el cambio tocó LSP o formateadores, ejecuta
+`:Mason` y revisa que no falte nada; `:checkhealth` sigue siendo la comprobación
+rápida de siempre.
+
+### Si `git pull` da conflicto
+
+Pasa cuando editaste archivos de la config a mano. Guarda tus cambios aparte y
+vuelve a la versión limpia:
+
+```bash
+git stash          # aparta tus cambios locales
+git pull
+git stash pop      # reaplícalos (resuelve conflictos si los hay)
+```
+
+Si no te importa perderlos: `git reset --hard origin/main` — **borra** cualquier
+modificación local sin recuperación.
+
+### Versiones de plugins
+
+`lazy-lock.json` fija la versión exacta de cada plugin y viaja en el repo, así
+que tras un `git pull` + `:Lazy sync` tienes exactamente el mismo set que quien
+publicó la versión. Si quieres subir plugins a lo último por tu cuenta usa
+`:Lazy update` — eso reescribe tu `lazy-lock.json` y puede entrar en conflicto en
+el siguiente `git pull`.
 
 ## Structure
 
@@ -324,23 +437,47 @@ Installed via Mason:
 
 ## AI Setup
 
-Avante uses Claude by default. Set your API keys as environment variables.
+Avante usa **GitHub Copilot** por defecto: no hace falta ninguna API key, solo
+una cuenta de Copilot (gratis para estudiantes y proyectos open source). Dentro
+de Neovim:
 
-**Linux / macOS** — add to `.bashrc` / `.zshrc`:
+```vim
+:Copilot auth
+```
+
+Se abre el flujo de login por navegador. La config sincroniza el token de
+`copilot.lua` al formato que lee avante, así que con eso queda listo en Linux,
+macOS y Windows por igual.
+
+### Otro proveedor (opcional)
+
+Hay otros proveedores ya configurados en `lua/clainev/plugins/ai.lua`: `claude`,
+`openai`, `gemini` y `groq`. Exporta la key correspondiente y cambia `provider`
+ahí. Si Copilot no está autenticado, la config cae automáticamente a `gemini`
+para que avante arranque igual.
+
+| Provider | Variable de entorno |
+| --- | --- |
+| `claude` | `ANTHROPIC_API_KEY` |
+| `openai` | `OPENAI_API_KEY` |
+| `gemini` | `GEMINI_API_KEY` |
+| `groq` | `GROQ_API_KEY` |
+
+**Linux / macOS** — añade a `.bashrc` / `.zshrc`:
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."
 export OPENAI_API_KEY="sk-..."  # optional
 ```
 
-**Windows** — add to PowerShell `$PROFILE`:
+**Windows** — añade al `$PROFILE` de PowerShell:
 
 ```powershell
 $env:ANTHROPIC_API_KEY = "sk-ant-..."
 $env:OPENAI_API_KEY    = "sk-..."     # optional
 ```
 
-Or permanently via: `Win + R` → `sysdm.cpl` → Advanced → Environment Variables.
+O de forma permanente vía: `Win + R` → `sysdm.cpl` → Advanced → Environment Variables.
 
 ## Testing
 
