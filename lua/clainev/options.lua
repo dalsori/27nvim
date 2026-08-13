@@ -5,6 +5,16 @@
 -- Detect OS (must be before lazy)
 vim.g.is_windows    = vim.fn.has "win32" == 1
 
+-- Exponer mason/bin en el PATH: nvim-dap busca codelldb, js-debug-adapter,
+-- php-debug-adapter y dlv por nombre (igual que nvim-dap-go), y esos
+-- binarios solo existen dentro del paquete de Mason. Sin esto, F5 en
+-- Rust/C/C++/JS/TS/PHP/Go falla con "command not found".
+local mason_bin = vim.fn.stdpath "data" .. "/mason/bin"
+if vim.uv.fs_stat(mason_bin) and not vim.env.PATH:find(mason_bin, 1, true) then
+  local sep = vim.g.is_windows and ";" or ":"
+  vim.env.PATH = mason_bin .. sep .. vim.env.PATH
+end
+
 -- Windows + MinGW: tree-sitter CLI compila con cl.exe por defecto;
 -- sin MSVC hay que apuntarlo a gcc/g++ (parsers de treesitter y kulala)
 if vim.g.is_windows and vim.fn.executable "cl" == 0 and vim.fn.executable "gcc" == 1 then
