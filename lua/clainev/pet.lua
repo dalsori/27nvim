@@ -64,7 +64,7 @@ function M.greet()
     table.insert(lines, l)
   end
 
-  local inner_w = math.max(bw, ART_W)
+  local inner_w = math.max(bw + 2, ART_W)
   local height  = #lines
   for i, l in ipairs(lines) do
     lines[i] = center(l, inner_w)
