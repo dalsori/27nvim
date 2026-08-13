@@ -5,6 +5,17 @@
 -- Detect OS (must be before lazy)
 vim.g.is_windows    = vim.fn.has "win32" == 1
 
+-- Compat: mínimo Neovim 0.11. La config usa vim.lsp.config / vim.lsp.enable,
+-- inlay_hint con filtro y la rama main de nvim-treesitter; todo eso requiere
+-- 0.11. En versiones viejas avisa claro en vez de romper a medio arranque.
+if vim.fn.has "nvim-0.11" == 0 then
+  vim.notify_once(
+    ("Clainev requiere Neovim >= 0.11 (tienes %s). Actualiza antes de seguir.")
+      :format(vim.version().major .. "." .. vim.version().minor),
+    vim.log.levels.ERROR
+  )
+end
+
 -- Exponer mason/bin en el PATH: nvim-dap busca codelldb, js-debug-adapter,
 -- php-debug-adapter y dlv por nombre (igual que nvim-dap-go), y esos
 -- binarios solo existen dentro del paquete de Mason. Sin esto, F5 en
@@ -71,6 +82,7 @@ opt.splitbelow     = true
 opt.scrolloff      = 8
 opt.sidescrolloff  = 8
 opt.wrap           = false
+opt.smoothscroll   = true  -- desplazamiento por línea en vez de a saltos
 
 -- Indentation (defaults; overridden per-filetype in autocmds)
 opt.tabstop        = 2

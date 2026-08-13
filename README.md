@@ -20,7 +20,7 @@
 A fast, modular Neovim setup for full-stack and systems development.
 
 [![CI](https://github.com/dalsori/27nvim/actions/workflows/ci.yml/badge.svg)](https://github.com/dalsori/27nvim/actions/workflows/ci.yml)
-![Neovim](https://img.shields.io/badge/Neovim-0.10+-57A143?style=flat&logo=neovim&logoColor=white)
+![Neovim](https://img.shields.io/badge/Neovim-0.11+-57A143?style=flat&logo=neovim&logoColor=white)
 ![Lua](https://img.shields.io/badge/Lua-5.1-2C2D72?style=flat&logo=lua&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat)
 ![Windows](https://img.shields.io/badge/Windows-native-0078D4?style=flat&logo=windows&logoColor=white)
@@ -41,7 +41,7 @@ A fast, modular Neovim setup for full-stack and systems development.
 
 ## Requirements
 
-- Neovim >= 0.10
+- Neovim >= 0.11
 - Git
 - [Nerd Font](https://www.nerdfonts.com/) — any variant
 - `cmake` (for telescope-fzf-native on Windows)
@@ -76,7 +76,7 @@ sudo dnf install git nodejs npm ripgrep fd-find cmake unzip
 sudo pacman -S git nodejs npm ripgrep fd cmake unzip
 ```
 
-> **Ojo con la versión de Neovim.** Esta config necesita **>= 0.10** y los repos de
+> **Ojo con la versión de Neovim.** Esta config necesita **>= 0.11** y los repos de
 > Debian/Ubuntu suelen traer una más vieja. Comprueba con `nvim --version`; si se
 > queda corta, usa el AppImage oficial:
 >
