@@ -5,6 +5,8 @@
 -- ════════════════════════════════════════════════════════════════════
 
 -- ── THEME ─────────────────────────────────────────────────────────
+-- Monokai (khoido2003/monokai-v2 fork de loctvl842) = Monokai Dark (pro) + Monokai Light (light)
+-- Catppuccin se mantiene como alternativa (:colorscheme catppuccin-mocha / catppuccin-latte)
 return {
   {
     "catppuccin/nvim",
@@ -12,7 +14,7 @@ return {
     priority = 1000,
     opts     = {
       flavour                = "mocha",
-      transparent_background = false,
+      transparent_background = true,
       term_colors            = true,
       integrations           = {
         cmp              = true,
@@ -30,7 +32,76 @@ return {
     },
     config   = function(_, opts)
       require("catppuccin").setup(opts)
-      vim.cmd.colorscheme "catppuccin-mocha"
+      -- No aplicar catppuccin por defecto; lo hace monokai abajo.
+      -- Queda disponible vía :colorscheme catppuccin-mocha / catppuccin-latte
+    end,
+  },
+  {
+    -- Monokai Dark (pro) + Light — fork con filter "light" nativo
+    "khoido2003/monokai-v2.nvim",
+    name     = "monokai-pro",
+    priority = 1000,
+    lazy     = false,
+    opts     = {
+      filter               = "pro", -- dark por defecto
+      transparent_background = true,
+      terminal_colors      = true,
+      devicons             = true,
+      styles = {
+        comment    = { italic = true },
+        keyword    = { italic = true },
+        type       = { italic = true },
+        storageclass = { italic = true },
+        structure  = { italic = true },
+        parameter  = { italic = true },
+        annotation = { italic = true },
+        tag_attribute = { italic = true },
+      },
+      inc_search = "background",
+      background_clear = { "toggleterm", "telescope", "renamer", "notify" },
+      plugins = {
+        bufferline = { underline_selected = false, underline_visible = false, bold = true },
+        indent_blankline = { context_highlight = "default", context_start_underline = false },
+      },
+    },
+    config   = function(_, opts)
+      -- fork khoido2003 usa módulo "monokai-v2" y colorscheme "monokai-v2"
+      -- compat: "monokai-pro" es alias (colors/monokai-pro*.lua)
+      require("monokai-v2").setup(opts)
+      vim.cmd.colorscheme "monokai-v2"
+      vim.g.monokai_is_light = false
+
+      -- Helpers para Monokai Dark / Light + toggle
+      local function apply_monokai(filter, is_light)
+        require("monokai-v2").setup(vim.tbl_extend("force", opts, { filter = filter }))
+        vim.cmd.colorscheme "monokai-v2"
+        vim.g.monokai_is_light = is_light
+      end
+
+      vim.api.nvim_create_user_command("MonokaiDark", function()
+        apply_monokai("pro", false)
+        vim.notify("Monokai Dark (pro)", vim.log.levels.INFO)
+      end, { desc = "Monokai Dark" })
+
+      vim.api.nvim_create_user_command("MonokaiLight", function()
+        apply_monokai("light", true)
+        vim.notify("Monokai Light", vim.log.levels.INFO)
+      end, { desc = "Monokai Light" })
+
+      _G.toggle_monokai = function()
+        if vim.g.monokai_is_light then
+          apply_monokai("pro", false)
+          vim.notify("Monokai Dark (pro)", vim.log.levels.INFO)
+        else
+          apply_monokai("light", true)
+          vim.notify("Monokai Light", vim.log.levels.INFO)
+        end
+      end
+
+      -- Atajo principal aquí también para que lazy lo registre aunque keymaps.lua lo duplique
+      vim.keymap.set("n", "<leader>tt", _G.toggle_monokai, { desc = "Toggle Monokai Dark/Light" })
+      vim.keymap.set("n", "<leader>td", "<cmd>MonokaiDark<CR>", { desc = "Monokai Dark" })
+      vim.keymap.set("n", "<leader>tl", "<cmd>MonokaiLight<CR>", { desc = "Monokai Light" })
     end,
   },
 

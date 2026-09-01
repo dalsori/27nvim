@@ -82,3 +82,41 @@ autocmd("FileType", {
     vim.opt_local.spell = true
   end,
 })
+
+-- Transparencia global: quita el fondo de los floats/popups (telescope/fzf,
+-- completions, notificaciones, etc.) para que queden 100% transparentes como
+-- el editor. winblend se deja a 0: si no, la ventana se mezcla con el fondo
+-- del terminal y vuelve a aparecer un tinte semitransparente.
+local function transparent_floats()
+  local groups = {
+    "NormalFloat", "FloatBorder", "FloatTitle",
+    "MsgArea", "MsgSeparator",
+    "Pmenu", "PmenuSel", "PmenuThumb", "PmenuSbar",
+    "TelescopeNormal", "TelescopeBorder",
+    "TelescopePromptNormal", "TelescopePromptBorder",
+    "TelescopeResultsNormal", "TelescopeResultsBorder",
+    "TelescopePreviewNormal", "TelescopePreviewBorder",
+    "TelescopeSelection", "TelescopeSelectionCaret",
+    "TelescopePromptTitle", "TelescopeResultsTitle", "TelescopePreviewTitle",
+    "NotifyBackground", "NotifyErrorBorder", "NotifyWarnBorder",
+    "NotifyInfoBorder", "NotifyDebugBorder", "NotifyTraceBorder",
+    "LazyNormal", "LazyBorder", "WhichKeyFloat", "WhichKeyBorder",
+  }
+  for _, name in ipairs(groups) do
+    local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name })
+    if ok and hl then
+      hl.bg = nil
+      pcall(vim.api.nvim_set_hl, 0, name, hl)
+    end
+  end
+end
+
+-- Re-aplica la transparencia tras cada carga de colorscheme (catppuccin
+-- vuelve a pintar NormalFloat y compania cuando se recarga).
+autocmd("ColorScheme", {
+  group    = augroup("TransparentFloats", { clear = true }),
+  callback = transparent_floats,
+})
+
+-- winblend 0: nada de mezcla translucida, solo fondo quitado.
+vim.opt.winblend = 0

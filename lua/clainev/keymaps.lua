@@ -89,6 +89,12 @@ map("n", "<leader>Fq", "<cmd>FlutterQuit<CR>", { desc = "Flutter quit" })
 map("n", "<leader>FR", "<cmd>FlutterReload<CR>", { desc = "Flutter hot reload" })
 map("n", "<leader>FL", "<cmd>FlutterLogs<CR>", { desc = "Flutter logs" })
 
+-- ── Theme (Monokai) ─────────────────────────────────────────────
+-- <leader>tt = toggle Dark/Light, <leader>td = dark, <leader>tl = light
+map("n", "<leader>tt", function() if _G.toggle_monokai then _G.toggle_monokai() else vim.cmd("colorscheme monokai-pro") end end, { desc = "Toggle Monokai Dark/Light" })
+map("n", "<leader>td", "<cmd>MonokaiDark<CR>", { desc = "Monokai Dark" })
+map("n", "<leader>tl", "<cmd>MonokaiLight<CR>", { desc = "Monokai Light" })
+
 -- ── AI (Avante) ───────────────────────────────────────────────────
 map("n", "<leader>aa", "<cmd>AvanteToggle<CR>", { desc = "AI Chat Sidebar" })
 map("n", "<leader>ac", "<cmd>AvanteAsk<CR>", { desc = "AI Ask" })

@@ -1,9 +1,10 @@
 -- ════════════════════════════════════════════════════════════════════
 --  AI
---  avante.nvim (sidebar de chat/agente, sin autocompletado inline)
+--  avante.nvim (sidebar de chat/agente) + copilot.lua (autocompletado inline)
 --
 --  Proveedor por defecto: GitHub Copilot (gratis, sin API key).
 --    Primera vez: ejecuta :Copilot auth → login por navegador → reinicia nvim.
+--    Autocompletado inline (ghost text): Tab / <M-l> para aceptar.
 --
 --  NOTA: el copilot.lua moderno guarda el login en auth.db (SQLite),
 --  pero avante solo lee el formato viejo hosts.json. El bloque
@@ -97,13 +98,28 @@ return {
       "stevearc/dressing.nvim",
       "hrsh7th/nvim-cmp",
       {
-        -- Solo como backend de autenticación para avante:
-        -- las sugerencias inline y el panel quedan desactivados.
+        -- Autocompletado inline (ghost text) + backend de auth para avante.
         "zbirenbaum/copilot.lua",
-        cmd  = "Copilot",
-        opts = {
-          suggestion = { enabled = false },
-          panel      = { enabled = false },
+        cmd   = "Copilot",
+        event = "InsertEnter",
+        opts  = {
+          suggestion = {
+            enabled      = true,
+            auto_trigger = true,
+            keymap = {
+              accept = "<M-l>",
+              next   = "<M-]>",
+              prev   = "<M-[>",
+              dismiss = "<C-]>",
+            },
+          },
+          panel = { enabled = true },
+          filetypes = {
+            markdown = true,
+            help     = false,
+            gitcommit = true,
+            ["."] = true,
+          },
         },
       },
     },
@@ -147,16 +163,25 @@ return {
       },
     },
     config       = function(_, opts)
-      -- El provider copilot de avante falla en setup() si no existe el
-      -- token; si aún no hay login, arrancar con gemini para que avante
-      -- funcione igual y avisar al usuario.
-      if not sync_copilot_token() then
-        opts.provider = "gemini"
-        opts.auto_suggestions_provider = "gemini"
+      -- Validar/sincronizar token de Copilot. Si no hay login, mantener
+      -- copilot como provider pero avisar; cambiar a gemini solo si hay
+      -- GEMINI_API_KEY, de lo contrario avante mostraría "provider not configured".
+      local has_copilot = sync_copilot_token()
+      if not has_copilot then
+        local has_gemini = os.getenv("GEMINI_API_KEY") and os.getenv("GEMINI_API_KEY") ~= ""
+        local has_groq = os.getenv("GROQ_API_KEY") and os.getenv("GROQ_API_KEY") ~= ""
+        if has_gemini then
+          opts.provider = "gemini"
+          opts.auto_suggestions_provider = "gemini"
+        elseif has_groq then
+          opts.provider = "groq"
+          opts.auto_suggestions_provider = "groq"
+        end
         vim.defer_fn(function()
           vim.notify(
             "[avante] Copilot sin autenticar: ejecuta :Copilot auth, "
-            .. "completa el login en el navegador y reinicia nvim",
+            .. "completa el login en el navegador y reinicia nvim"
+            .. " (sin GEMINI/GROQ_API_KEY el chat no funcionará hasta autenticar)",
             vim.log.levels.WARN
           )
         end, 500)

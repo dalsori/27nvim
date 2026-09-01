@@ -59,7 +59,7 @@ return {
       map("n", "<leader>fG", builtin.git_branches,           { desc = "Git Branches" })
       map("n", "<leader>f/", function()
         builtin.current_buffer_fuzzy_find(
-          require("telescope.themes").get_dropdown { winblend = 10, previewer = false }
+          require("telescope.themes").get_dropdown { winblend = 0, previewer = false }
         )
       end, { desc = "Fuzzy in buffer" })
     end,

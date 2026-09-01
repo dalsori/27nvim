@@ -194,7 +194,12 @@ return {
         docker_compose_language_service  = {},
         helm_ls                          = {},
         bashls                           = {},
-        powershell_es                    = {},
+        -- bundle_path explícito: el default de mason-lspconfig usa la var
+        -- $MASON, que a veces no está definida al construir el `cmd` y
+        -- produce "nil/PowerShellEditorServices/Start-EditorServices.ps1"
+        powershell_es = {
+          bundle_path = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services",
+        },
       }
 
       local ensure_installed = vim.tbl_filter(function(server)
@@ -220,10 +225,16 @@ return {
         run_on_start = true,
       }
 
+      -- Solo habilitar servidores que mason tiene instalados: si se llama
+      -- vim.lsp.enable() sobre un servidor no instalado, nvim valida su `cmd`
+      -- y lanza el error "invalid <server> config ... is not executable".
+      local installed_servers = require("mason-lspconfig").get_installed_servers()
       for server, config in pairs(servers) do
         config.capabilities = capabilities
         vim.lsp.config(server, config)
-        vim.lsp.enable(server)
+        if vim.list_contains(installed_servers, server) then
+          vim.lsp.enable(server)
+        end
       end
 
       -- Diagnostic icons
