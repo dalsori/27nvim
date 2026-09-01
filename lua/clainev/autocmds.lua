@@ -103,12 +103,13 @@ local function transparent_floats()
     "LazyNormal", "LazyBorder", "WhichKeyFloat", "WhichKeyBorder",
   }
   for _, name in ipairs(groups) do
-    local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name })
-    if ok and hl then
-      hl.bg = nil
-      pcall(vim.api.nvim_set_hl, 0, name, hl)
-    end
+    -- guibg=NONE fuerza transparencia real; nvim_set_hl con bg=nil no siempre limpia
+    pcall(vim.api.nvim_set_hl, 0, name, { bg = "NONE", ctermbg = "NONE" })
+    pcall(vim.cmd, "highlight " .. name .. " guibg=NONE ctermbg=NONE")
   end
+  -- Asegura Telescope completo transparente aunque el tema lo repinte
+  pcall(vim.cmd, "highlight TelescopeNormal guibg=NONE ctermbg=NONE")
+  pcall(vim.cmd, "highlight TelescopeBorder guibg=NONE ctermbg=NONE")
 end
 
 -- Re-aplica la transparencia tras cada carga de colorscheme (catppuccin

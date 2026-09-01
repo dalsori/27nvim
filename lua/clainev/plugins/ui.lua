@@ -58,6 +58,7 @@ return {
         tag_attribute = { italic = true },
       },
       inc_search = "background",
+      -- tabs (bufferline) y sidebar (neo-tree) opacos, resto transparente
       background_clear = { "toggleterm", "telescope", "renamer", "notify" },
       plugins = {
         bufferline = { underline_selected = false, underline_visible = false, bold = true },

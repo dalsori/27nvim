@@ -8,7 +8,7 @@
 -- ╚══════════════════════════════════════════════════════════════════╝
 
 require "clainev.options"
+require "clainev.autocmds"
 require "clainev.lazy"
 require "clainev.keymaps"
-require "clainev.autocmds"
 require "clainev.pet"
