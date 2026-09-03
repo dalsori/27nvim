@@ -36,7 +36,7 @@ return {
           layout_config    = { prompt_position = "top", width = 0.87, height = 0.80 },
           sorting_strategy = "ascending",
           path_display     = { "truncate" },
-          winblend         = 0, -- transparente (antes quedaba con fondo sólido en <leader>ff)
+          winblend         = 0, -- opaco (sin transparencia)
           border           = true,
         },
         extensions = {

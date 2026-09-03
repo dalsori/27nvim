@@ -83,41 +83,6 @@ autocmd("FileType", {
   end,
 })
 
--- Transparencia global: quita el fondo de los floats/popups (telescope/fzf,
--- completions, notificaciones, etc.) para que queden 100% transparentes como
--- el editor. winblend se deja a 0: si no, la ventana se mezcla con el fondo
--- del terminal y vuelve a aparecer un tinte semitransparente.
-local function transparent_floats()
-  local groups = {
-    "NormalFloat", "FloatBorder", "FloatTitle",
-    "MsgArea", "MsgSeparator",
-    "Pmenu", "PmenuSel", "PmenuThumb", "PmenuSbar",
-    "TelescopeNormal", "TelescopeBorder",
-    "TelescopePromptNormal", "TelescopePromptBorder",
-    "TelescopeResultsNormal", "TelescopeResultsBorder",
-    "TelescopePreviewNormal", "TelescopePreviewBorder",
-    "TelescopeSelection", "TelescopeSelectionCaret",
-    "TelescopePromptTitle", "TelescopeResultsTitle", "TelescopePreviewTitle",
-    "NotifyBackground", "NotifyErrorBorder", "NotifyWarnBorder",
-    "NotifyInfoBorder", "NotifyDebugBorder", "NotifyTraceBorder",
-    "LazyNormal", "LazyBorder", "WhichKeyFloat", "WhichKeyBorder",
-  }
-  for _, name in ipairs(groups) do
-    -- guibg=NONE fuerza transparencia real; nvim_set_hl con bg=nil no siempre limpia
-    pcall(vim.api.nvim_set_hl, 0, name, { bg = "NONE", ctermbg = "NONE" })
-    pcall(vim.cmd, "highlight " .. name .. " guibg=NONE ctermbg=NONE")
-  end
-  -- Asegura Telescope completo transparente aunque el tema lo repinte
-  pcall(vim.cmd, "highlight TelescopeNormal guibg=NONE ctermbg=NONE")
-  pcall(vim.cmd, "highlight TelescopeBorder guibg=NONE ctermbg=NONE")
-end
-
--- Re-aplica la transparencia tras cada carga de colorscheme (catppuccin
--- vuelve a pintar NormalFloat y compania cuando se recarga).
-autocmd("ColorScheme", {
-  group    = augroup("TransparentFloats", { clear = true }),
-  callback = transparent_floats,
-})
-
--- winblend 0: nada de mezcla translucida, solo fondo quitado.
+-- Tema opaco (sin transparencia): no se tocan los highlights de floats.
+-- Se deja winblend = 0 para que los popups sean sólidos.
 vim.opt.winblend = 0

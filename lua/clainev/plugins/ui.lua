@@ -14,7 +14,7 @@ return {
     priority = 1000,
     opts     = {
       flavour                = "mocha",
-      transparent_background = true,
+      transparent_background = false,
       term_colors            = true,
       integrations           = {
         cmp              = true,
@@ -44,7 +44,7 @@ return {
     lazy     = false,
     opts     = {
       filter               = "pro", -- dark por defecto
-      transparent_background = true,
+      transparent_background = false,
       terminal_colors      = true,
       devicons             = true,
       styles = {
@@ -58,8 +58,8 @@ return {
         tag_attribute = { italic = true },
       },
       inc_search = "background",
-      -- tabs (bufferline) y sidebar (neo-tree) opacos, resto transparente
-      background_clear = { "toggleterm", "telescope", "renamer", "notify" },
+      -- todo opaco (sin transparencia)
+      background_clear = {},
       plugins = {
         bufferline = { underline_selected = false, underline_visible = false, bold = true },
         indent_blankline = { context_highlight = "default", context_start_underline = false },
