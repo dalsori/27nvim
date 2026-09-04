@@ -76,7 +76,13 @@ map("n", "H", "<cmd>tabprev<CR>", { desc = "Prev tab" })
 
 -- ── Misc ──────────────────────────────────────────────────────────
 map("n", "<leader>u", "<cmd>UndotreeToggle<CR>", { desc = "Undo tree" })
-map("n", "<leader>m", "<cmd>MarkdownPreviewToggle<CR>", { desc = "Markdown preview" })
+map("n", "<leader>m", function()
+  if vim.bo.filetype == "markdown" then
+    vim.cmd "MarkdownPreviewToggle"
+  else
+    vim.notify("Markdown Preview solo está disponible en archivos Markdown", vim.log.levels.WARN, { title = "Markdown Preview" })
+  end
+end, { desc = "Markdown preview" })
 
 -- ── Database (dadbod) ─────────────────────────────────────────────
 map("n", "<leader>Du", "<cmd>DBUIToggle<CR>", { desc = "Database UI" })
@@ -89,9 +95,19 @@ map("n", "<leader>Fq", "<cmd>FlutterQuit<CR>", { desc = "Flutter quit" })
 map("n", "<leader>FR", "<cmd>FlutterReload<CR>", { desc = "Flutter hot reload" })
 map("n", "<leader>FL", "<cmd>FlutterLogs<CR>", { desc = "Flutter logs" })
 
--- ── Theme (Monokai) ─────────────────────────────────────────────
--- <leader>tt = toggle Dark/Light, <leader>td = dark, <leader>tl = light
-map("n", "<leader>tt", function() if _G.toggle_monokai then _G.toggle_monokai() else vim.cmd("colorscheme monokai-pro") end end, { desc = "Toggle Monokai Dark/Light" })
+-- ── Theme (Solarized — default) ───────────────────────────────
+-- <leader>tt / <leader>ts = toggle Solarized Dark/Light, <leader>sd/sl = dark/light
+-- Monokai y Catppuccin quedan como alternativas
+map("n", "<leader>tt", function()
+  if _G.toggle_solarized then _G.toggle_solarized()
+  elseif _G.toggle_monokai then _G.toggle_monokai()
+  else vim.cmd("colorscheme solarized") end
+end, { desc = "Toggle Solarized Dark/Light" })
+map("n", "<leader>ts", function()
+  if _G.toggle_solarized then _G.toggle_solarized() else vim.cmd("colorscheme solarized") end
+end, { desc = "Toggle Solarized Dark/Light" })
+map("n", "<leader>sd", "<cmd>SolarizedDark<CR>", { desc = "Solarized Dark" })
+map("n", "<leader>sl", "<cmd>SolarizedLight<CR>", { desc = "Solarized Light" })
 map("n", "<leader>td", "<cmd>MonokaiDark<CR>", { desc = "Monokai Dark" })
 map("n", "<leader>tl", "<cmd>MonokaiLight<CR>", { desc = "Monokai Light" })
 

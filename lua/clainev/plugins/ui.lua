@@ -1,12 +1,12 @@
 -- ════════════════════════════════════════════════════════════════════
 --  UI PLUGINS
---  catppuccin · lualine · bufferline · neo-tree · dashboard
+--  solarized (default) · catppuccin · monokai · lualine · bufferline · neo-tree · dashboard
 --  which-key · indent-blankline · nvim-colorizer
 -- ════════════════════════════════════════════════════════════════════
 
 -- ── THEME ─────────────────────────────────────────────────────────
--- Monokai (khoido2003/monokai-v2 fork de loctvl842) = Monokai Dark (pro) + Monokai Light (light)
--- Catppuccin se mantiene como alternativa (:colorscheme catppuccin-mocha / catppuccin-latte)
+-- Solarized Osaka (craftzdog/solarized-osaka.nvim) = Solarized Dark mejorado — DEFAULT
+-- Monokai y Catppuccin quedan como alternativas (:colorscheme monokai-v2 / catppuccin-mocha)
 return {
   {
     "catppuccin/nvim",
@@ -32,18 +32,18 @@ return {
     },
     config   = function(_, opts)
       require("catppuccin").setup(opts)
-      -- No aplicar catppuccin por defecto; lo hace monokai abajo.
+      -- No aplicar catppuccin por defecto; lo hace solarized abajo.
       -- Queda disponible vía :colorscheme catppuccin-mocha / catppuccin-latte
     end,
   },
   {
-    -- Monokai Dark (pro) + Light — fork con filter "light" nativo
+    -- Monokai Dark (pro) + Light — queda como alternativa
     "khoido2003/monokai-v2.nvim",
     name     = "monokai-pro",
     priority = 1000,
     lazy     = false,
     opts     = {
-      filter               = "pro", -- dark por defecto
+      filter               = "pro",
       transparent_background = false,
       terminal_colors      = true,
       devicons             = true,
@@ -58,7 +58,6 @@ return {
         tag_attribute = { italic = true },
       },
       inc_search = "background",
-      -- todo opaco (sin transparencia)
       background_clear = {},
       plugins = {
         bufferline = { underline_selected = false, underline_visible = false, bold = true },
@@ -66,17 +65,16 @@ return {
       },
     },
     config   = function(_, opts)
-      -- fork khoido2003 usa módulo "monokai-v2" y colorscheme "monokai-v2"
-      -- compat: "monokai-pro" es alias (colors/monokai-pro*.lua)
       require("monokai-v2").setup(opts)
-      vim.cmd.colorscheme "monokai-v2"
-      vim.g.monokai_is_light = false
+      -- No aplicar por defecto; solarized es el default ahora.
+      -- Solo definir comandos y helpers para volver a Monokai si se quiere.
 
-      -- Helpers para Monokai Dark / Light + toggle
       local function apply_monokai(filter, is_light)
         require("monokai-v2").setup(vim.tbl_extend("force", opts, { filter = filter }))
+        vim.o.background = is_light and "light" or "dark"
         vim.cmd.colorscheme "monokai-v2"
         vim.g.monokai_is_light = is_light
+        vim.g.solarized_is_light = is_light
       end
 
       vim.api.nvim_create_user_command("MonokaiDark", function()
@@ -98,11 +96,80 @@ return {
           vim.notify("Monokai Light", vim.log.levels.INFO)
         end
       end
+    end,
+  },
+  {
+    -- Solarized Osaka — DEFAULT (https://github.com/craftzdog/solarized-osaka.nvim)
+    "craftzdog/solarized-osaka.nvim",
+    name     = "solarized-osaka",
+    priority = 1000,
+    lazy     = false,
+    opts     = {
+      transparent     = false,
+      terminal_colors = true,
+      styles = {
+        comments = { italic = true },
+        keywords = { italic = true },
+        functions = {},
+        variables = {},
+        sidebars = "dark",
+        floats = "dark",
+      },
+      dim_inactive = false,
+    },
+    config   = function(_, opts)
+      require("solarized-osaka").setup(opts)
+      vim.o.background = "dark"
+      vim.cmd.colorscheme "solarized-osaka"
+      vim.g.solarized_is_light = false
+      vim.g.monokai_is_light = false
 
-      -- Atajo principal aquí también para que lazy lo registre aunque keymaps.lua lo duplique
-      vim.keymap.set("n", "<leader>tt", _G.toggle_monokai, { desc = "Toggle Monokai Dark/Light" })
-      vim.keymap.set("n", "<leader>td", "<cmd>MonokaiDark<CR>", { desc = "Monokai Dark" })
-      vim.keymap.set("n", "<leader>tl", "<cmd>MonokaiLight<CR>", { desc = "Monokai Light" })
+      local function apply_solarized(is_light)
+        if is_light then
+          vim.o.background = "light"
+          vim.cmd.colorscheme "solarized-osaka-light"
+        else
+          vim.o.background = "dark"
+          vim.cmd.colorscheme "solarized-osaka"
+        end
+        vim.g.solarized_is_light = is_light
+        vim.g.monokai_is_light = is_light
+      end
+
+      vim.api.nvim_create_user_command("SolarizedDark", function()
+        apply_solarized(false)
+        vim.notify("Solarized Osaka Dark", vim.log.levels.INFO)
+      end, { desc = "Solarized Osaka Dark" })
+
+      vim.api.nvim_create_user_command("SolarizedLight", function()
+        apply_solarized(true)
+        vim.notify("Solarized Osaka Light", vim.log.levels.INFO)
+      end, { desc = "Solarized Osaka Light" })
+
+      vim.api.nvim_create_user_command("SolarizedVivid", function()
+        vim.o.background = "dark"
+        vim.cmd.colorscheme "solarized-osaka-vivid"
+        vim.notify("Solarized Osaka Vivid", vim.log.levels.INFO)
+      end, { desc = "Solarized Osaka Vivid" })
+
+      _G.toggle_solarized = function()
+        if vim.g.solarized_is_light then
+          apply_solarized(false)
+          vim.notify("Solarized Osaka Dark", vim.log.levels.INFO)
+        else
+          apply_solarized(true)
+          vim.notify("Solarized Osaka Light", vim.log.levels.INFO)
+        end
+      end
+
+      -- <leader>tt ahora es Solarized Osaka (compat: toggle_monokai apunta al mismo)
+      _G.toggle_monokai = _G.toggle_solarized
+
+      vim.keymap.set("n", "<leader>tt", _G.toggle_solarized, { desc = "Toggle Solarized Osaka Dark/Light" })
+      vim.keymap.set("n", "<leader>ts", _G.toggle_solarized, { desc = "Toggle Solarized Osaka Dark/Light" })
+      vim.keymap.set("n", "<leader>sd", "<cmd>SolarizedDark<CR>", { desc = "Solarized Osaka Dark" })
+      vim.keymap.set("n", "<leader>sl", "<cmd>SolarizedLight<CR>", { desc = "Solarized Osaka Light" })
+      vim.keymap.set("n", "<leader>sv", "<cmd>SolarizedVivid<CR>", { desc = "Solarized Osaka Vivid" })
     end,
   },
 
