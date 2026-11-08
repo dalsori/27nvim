@@ -11,14 +11,13 @@ local function get_cwd()
 	return vim.uv.cwd() or vim.fn.getcwd()
 end
 
---- Normalize a path (resolve symlinks, ensure consistent format)
+--- Preserve the same Windows path spelling used by buffers and project roots.
 ---@param path string
 ---@return string
 local function normalize(path)
 	if path:sub(1, 1) == "~" then
 		path = vim.fn.expand(path)
 	end
-	path = vim.uv.fs_realpath(path) or path
 	return vim.fs.normalize(path):gsub("/$", "")
 end
 
