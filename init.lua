@@ -1,14 +1,16 @@
--- ╔══════════════════════════════════════════════════════════════════╗
--- ║          CLAINEV NEOVIM CONFIG — IDE completo                    ║
--- ║  Stack: TS/JS · React · Go · Rust · Python · PHP/Laravel         ║
--- ║         Java/Spring · Bun/Elysia · C/C++ · Dart · SQL            ║
--- ║  Infra: Docker · Kubernetes/Helm · Nginx · GraphQL · gRPC        ║
--- ║  IDE:   LSP · DAP (debug) · neotest · REST client · DB UI        ║
--- ║          OS: Windows / Linux / macOS compatible                  ║
--- ╚══════════════════════════════════════════════════════════════════╝
+if vim.fn.has("nvim-0.12") == 0 then
+	error("27nvim requires Neovim 0.12 or newer")
+end
 
-require "clainev.options"
-require "clainev.autocmds"
-require "clainev.lazy"
-require "clainev.keymaps"
-require "clainev.pet"
+if vim.loader then
+	vim.loader.enable()
+end
+
+require("clainev.config.platform")
+_G.Clainev = require("clainev.utils")
+require("clainev.config.options")
+require("clainev.config.keymaps")
+require("clainev.config.autocmds")
+require("clainev.config.commands")
+require("clainev.config.workarounds")
+require("clainev.plugins")

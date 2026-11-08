@@ -6,11 +6,9 @@
 plugin/packer_compiled.lua
 ftplugin/
 
-# ── Lazy.nvim ─────────────────────────────────────────────────────
-# Descomenta la siguiente línea si NO quieres fijar versiones de plugins.
-# Si la dejas comentada, lazy-lock.json se sube y puedes reproducir
-# el setup exacto en cualquier máquina con :Lazy restore
-# lazy-lock.json
+# vim.pack: nvim-pack-lock.json is committed for reproducible installations.
+# Private, machine-specific plugins must not be published.
+lua/clainev/plugins/local.lua
 
 # ── Neovim session / swap / undo (si alguien los guarda en el config) ─
 *.swp

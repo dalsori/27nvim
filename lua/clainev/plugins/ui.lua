@@ -1,452 +1,189 @@
--- ════════════════════════════════════════════════════════════════════
---  UI PLUGINS
---  solarized (default) · catppuccin · monokai · lualine · bufferline · neo-tree · dashboard
---  which-key · indent-blankline · nvim-colorizer
--- ════════════════════════════════════════════════════════════════════
+local icons = Clainev.icons
+local lualine_utils = require("clainev.utils.lualine")
 
--- ── THEME ─────────────────────────────────────────────────────────
--- Solarized Osaka (craftzdog/solarized-osaka.nvim) = Solarized Dark mejorado — DEFAULT
--- Monokai y Catppuccin quedan como alternativas (:colorscheme monokai-v2 / catppuccin-mocha)
-return {
-  {
-    "catppuccin/nvim",
-    name     = "catppuccin",
-    priority = 1000,
-    opts     = {
-      flavour                = "mocha",
-      transparent_background = false,
-      term_colors            = true,
-      integrations           = {
-        cmp              = true,
-        gitsigns         = true,
-        nvimtree         = false,
-        neo_tree         = true,
-        treesitter       = true,
-        telescope        = { enabled = true },
-        which_key        = true,
-        indent_blankline = { enabled = true },
-        mason            = true,
-        lsp_trouble      = true,
-        bufferline       = true,
-      },
-    },
-    config   = function(_, opts)
-      require("catppuccin").setup(opts)
-      -- No aplicar catppuccin por defecto; lo hace solarized abajo.
-      -- Queda disponible vía :colorscheme catppuccin-mocha / catppuccin-latte
-    end,
-  },
-  {
-    -- Monokai Dark (pro) + Light — queda como alternativa
-    "khoido2003/monokai-v2.nvim",
-    name     = "monokai-pro",
-    priority = 1000,
-    lazy     = false,
-    opts     = {
-      filter               = "pro",
-      transparent_background = false,
-      terminal_colors      = true,
-      devicons             = true,
-      styles = {
-        comment    = { italic = true },
-        keyword    = { italic = true },
-        type       = { italic = true },
-        storageclass = { italic = true },
-        structure  = { italic = true },
-        parameter  = { italic = true },
-        annotation = { italic = true },
-        tag_attribute = { italic = true },
-      },
-      inc_search = "background",
-      background_clear = {},
-      plugins = {
-        bufferline = { underline_selected = false, underline_visible = false, bold = true },
-        indent_blankline = { context_highlight = "default", context_start_underline = false },
-      },
-    },
-    config   = function(_, opts)
-      require("monokai-v2").setup(opts)
-      -- No aplicar por defecto; solarized es el default ahora.
-      -- Solo definir comandos y helpers para volver a Monokai si se quiere.
+require("solarized-osaka").setup({
+	style = "vivid",
+	transparent = false,
+})
+vim.cmd.colorscheme("solarized-osaka")
 
-      local function apply_monokai(filter, is_light)
-        require("monokai-v2").setup(vim.tbl_extend("force", opts, { filter = filter }))
-        vim.o.background = is_light and "light" or "dark"
-        vim.cmd.colorscheme "monokai-v2"
-        vim.g.monokai_is_light = is_light
-        vim.g.solarized_is_light = is_light
-      end
+require("mini.icons").setup()
+require("mini.icons").mock_nvim_web_devicons()
 
-      vim.api.nvim_create_user_command("MonokaiDark", function()
-        apply_monokai("pro", false)
-        vim.notify("Monokai Dark (pro)", vim.log.levels.INFO)
-      end, { desc = "Monokai Dark" })
+-- Custom tabline setup
+require("clainev.utils.tabline").setup()
+vim.o.showtabline = 1
+vim.o.tabline = "%!v:lua.require('clainev.utils.tabline').render()"
 
-      vim.api.nvim_create_user_command("MonokaiLight", function()
-        apply_monokai("light", true)
-        vim.notify("Monokai Light", vim.log.levels.INFO)
-      end, { desc = "Monokai Light" })
+require("snacks").setup({
+	indent = { enabled = true },
+	scroll = { enabled = false },
+	picker = {
+		enabled = true,
+		sources = {
+			files = { hidden = true },
+			grep = { hidden = true },
+		},
+	},
+	notifier = { enabled = true },
+	statuscolumn = { enabled = true },
+	words = { enabled = true },
+	lazygit = {
+		enabled = true,
+		configure = true, -- auto-sets nvim-remote preset & syncs theme
+		-- Snacks' native remote preset supports Windows. The reference's
+		-- custom edit command was fish-only and would fail under cmd.exe.
+		config = { gui = { mouseEvents = false }, git = { autoFetch = false } },
+		theme = {
+			activeBorderColor = { fg = "WarningMsg", bold = true },
+		},
+	},
+})
 
-      _G.toggle_monokai = function()
-        if vim.g.monokai_is_light then
-          apply_monokai("pro", false)
-          vim.notify("Monokai Dark (pro)", vim.log.levels.INFO)
-        else
-          apply_monokai("light", true)
-          vim.notify("Monokai Light", vim.log.levels.INFO)
-        end
-      end
-    end,
-  },
-  {
-    -- Solarized Osaka — DEFAULT (https://github.com/craftzdog/solarized-osaka.nvim)
-    "craftzdog/solarized-osaka.nvim",
-    name     = "solarized-osaka",
-    priority = 1000,
-    lazy     = false,
-    opts     = {
-      transparent     = false,
-      terminal_colors = true,
-      styles = {
-        comments = { italic = true },
-        keywords = { italic = true },
-        functions = {},
-        variables = {},
-        sidebars = "dark",
-        floats = "dark",
-      },
-      dim_inactive = false,
-    },
-    config   = function(_, opts)
-      require("solarized-osaka").setup(opts)
-      vim.o.background = "dark"
-      vim.cmd.colorscheme "solarized-osaka"
-      vim.g.solarized_is_light = false
-      vim.g.monokai_is_light = false
+if #vim.api.nvim_list_uis() > 0 then
+	require("tiny-cmdline").setup({
+		position = {
+			y = "20%",
+		},
+	})
+end
 
-      local function apply_solarized(is_light)
-        if is_light then
-          vim.o.background = "light"
-          vim.cmd.colorscheme "solarized-osaka-light"
-        else
-          vim.o.background = "dark"
-          vim.cmd.colorscheme "solarized-osaka"
-        end
-        vim.g.solarized_is_light = is_light
-        vim.g.monokai_is_light = is_light
-      end
+require("lualine").setup({
+	options = {
+		theme = "auto",
+		globalstatus = true,
+		disabled_filetypes = {
+			statusline = { "dashboard", "alpha", "ministarter", "snacks_dashboard" },
+		},
+		refresh = {
+			events = {
+				"WinEnter",
+				"BufEnter",
+				"BufWritePost",
+				"SessionLoadPost",
+				"FileChangedShellPost",
+				"VimResized",
+				"Filetype",
+				"CursorMoved",
+				"CursorMovedI",
+				"ModeChanged",
+				-- Macro
+				"RecordingEnter",
+				"RecordingLeave",
+			},
+		},
+	},
+	sections = {
+		lualine_a = { "mode" },
+		lualine_b = { "branch" },
 
-      vim.api.nvim_create_user_command("SolarizedDark", function()
-        apply_solarized(false)
-        vim.notify("Solarized Osaka Dark", vim.log.levels.INFO)
-      end, { desc = "Solarized Osaka Dark" })
+		lualine_c = {
+			lualine_utils.root_dir(),
+			{ "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
+			{
+				lualine_utils.pretty_path({
+					length = 0,
+					relative = "cwd",
+					modified_hl = "MatchParen",
+					directory_hl = "",
+					filename_hl = "Bold",
+					modified_sign = "",
+					readonly_icon = " 󰌾 ",
+				}),
+			},
+		},
+		lualine_x = {
+			lualine_utils.macro_recording(),
+			{
+				"diagnostics",
+				symbols = {
+					error = icons.diagnostics.Error,
+					warn = icons.diagnostics.Warn,
+					info = icons.diagnostics.Info,
+					hint = icons.diagnostics.Hint,
+				},
+			},
+			{
+				"diff",
+				symbols = {
+					added = icons.git.added,
+					modified = icons.git.modified,
+					removed = icons.git.removed,
+				},
+				source = function()
+					local gitsigns = vim.b.gitsigns_status_dict
+					if gitsigns then
+						return {
+							added = gitsigns.added,
+							modified = gitsigns.changed,
+							removed = gitsigns.removed,
+						}
+					end
+				end,
+			},
+		},
+		lualine_y = {
+			{ "progress", separator = " ", padding = { left = 1, right = 1 } },
+		},
+		lualine_z = {
+			{ "location", padding = { left = 1, right = 1 } },
+		},
+	},
+})
 
-      vim.api.nvim_create_user_command("SolarizedLight", function()
-        apply_solarized(true)
-        vim.notify("Solarized Osaka Light", vim.log.levels.INFO)
-      end, { desc = "Solarized Osaka Light" })
+require("incline").setup({
+	window = {
+		margin = { vertical = 0, horizontal = 1 },
+		zindex = 10,
+	},
+	hide = {
+		cursorline = "smart",
+	},
+	render = function(props)
+		local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(props.buf), ":t")
+		if vim.bo[props.buf].modified then
+			filename = "[+] " .. filename
+		end
 
-      vim.api.nvim_create_user_command("SolarizedVivid", function()
-        vim.o.background = "dark"
-        vim.cmd.colorscheme "solarized-osaka-vivid"
-        vim.notify("Solarized Osaka Vivid", vim.log.levels.INFO)
-      end, { desc = "Solarized Osaka Vivid" })
+		local icon, hl = MiniIcons.get("file", filename)
+		return { { icon, group = hl }, { " " }, { filename } }
+	end,
+})
 
-      _G.toggle_solarized = function()
-        if vim.g.solarized_is_light then
-          apply_solarized(false)
-          vim.notify("Solarized Osaka Dark", vim.log.levels.INFO)
-        else
-          apply_solarized(true)
-          vim.notify("Solarized Osaka Light", vim.log.levels.INFO)
-        end
-      end
+require("codediff").setup({
+	explorer = {
+		width = 50,
+		auto_open_on_cursor = true,
+		view_mode = "tree", -- "list" or "tree"
+		line_stats = {
+			enabled = true,
+		},
+	},
+	diff = {
+		compact = true,
+		compact_context_lines = 8,
+		compact_sync_folds = true, -- open/close folds in both panes together
+	},
+	keymaps = {
+		view = {},
+	},
+})
 
-      -- <leader>tt ahora es Solarized Osaka (compat: toggle_monokai apunta al mismo)
-      _G.toggle_monokai = _G.toggle_solarized
-
-      vim.keymap.set("n", "<leader>tt", _G.toggle_solarized, { desc = "Toggle Solarized Osaka Dark/Light" })
-      vim.keymap.set("n", "<leader>ts", _G.toggle_solarized, { desc = "Toggle Solarized Osaka Dark/Light" })
-      vim.keymap.set("n", "<leader>sd", "<cmd>SolarizedDark<CR>", { desc = "Solarized Osaka Dark" })
-      vim.keymap.set("n", "<leader>sl", "<cmd>SolarizedLight<CR>", { desc = "Solarized Osaka Light" })
-      vim.keymap.set("n", "<leader>sv", "<cmd>SolarizedVivid<CR>", { desc = "Solarized Osaka Vivid" })
-    end,
-  },
-
-  -- ── STATUSLINE ────────────────────────────────────────────────────
-  {
-    "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = {
-      options = {
-        theme                = "auto",
-        globalstatus         = true,
-        component_separators = { left = "", right = "" },
-        section_separators   = { left = "", right = "" },
-        disabled_filetypes   = { statusline = { "dashboard", "lazy" } },
-      },
-      sections = {
-        lualine_a = { "mode" },
-        lualine_b = { "branch", "diff", "diagnostics" },
-        lualine_c = { { "filename", path = 1 } },
-        lualine_x = { "encoding", "fileformat", "filetype" },
-        lualine_y = { "progress" },
-        lualine_z = { "location" },
-      },
-    },
-  },
-
-  -- ── TABLINE ───────────────────────────────────────────────────────
-  {
-    "akinsho/bufferline.nvim",
-    version      = "*",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts         = {
-      options = {
-        mode                    = "buffers",
-        numbers                 = "none",
-        close_command           = "bdelete! %d",
-        diagnostics             = "nvim_lsp",
-        separator_style         = "slant",
-        show_buffer_close_icons = true,
-        show_close_icon         = false,
-        always_show_bufferline  = true,
-        offsets                 = {
-          {
-            filetype  = "neo-tree",
-            text      = "  Explorer",
-            highlight = "Directory",
-            separator = true,
-          },
-        },
-      },
-    },
-  },
-
-  -- ── FILE EXPLORER ─────────────────────────────────────────────────
-  {
-    "nvim-neo-tree/neo-tree.nvim",
-    branch       = "v3.x",
-    cmd          = "Neotree",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-tree/nvim-web-devicons",
-      "MunifTanjim/nui.nvim",
-    },
-    opts         = {
-      close_if_last_window = true,
-      window               = {
-        position = "left",
-        width = 30,
-      },
-      filesystem           = {
-        filtered_items         = {
-          hide_dotfiles   = false,
-          hide_gitignored = false,
-          hide_by_name    = { "node_modules", ".DS_Store" },
-        },
-        async_directory_scan   = "always",
-        scan_mode              = "shallow",
-        follow_current_file    = { enabled = true },
-        use_libuv_file_watcher = false,
-      },
-    },
-  },
-
-  -- ── DASHBOARD ─────────────────────────────────────────────────────
-  {
-    "nvimdev/dashboard-nvim",
-    event        = "VimEnter",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts         = function()
-      -- Menú en rejilla (2 columnas) en vez de una lista vertical larga.
-      --
-      -- El tema doom de dashboard-nvim pinta exactamente un item por línea
-      -- y cuelga la tecla al final con virt_text, así que una rejilla no se
-      -- puede expresar con su `center`. Lo que hacemos: cada entrada del
-      -- `center` es UNA FILA ya maquetada con varias celdas dentro, y las
-      -- teclas y los colores de cada celda se aplican a mano al cargar el
-      -- buffer (autocmd User DashboardLoaded, más abajo).
-      local items = {
-        { icon = "  ", key = "f", desc = "Find File",    action = "Telescope find_files" },
-        { icon = "  ", key = "w", desc = "Find Word",    action = "Telescope live_grep" },
-        { icon = "  ", key = "r", desc = "Recent Files", action = "Telescope oldfiles" },
-        { icon = "  ", key = "e", desc = "Explorer",     action = "Neotree toggle" },
-        { icon = "  ", key = "g", desc = "LazyGit",      action = "LazyGit" },
-        { icon = "󰒲  ", key = "l", desc = "Lazy",         action = "Lazy" },
-        { icon = "  ", key = "m", desc = "Mason",        action = "Mason" },
-        { icon = "󰗼  ", key = "q", desc = "Quit",         action = "qa" },
-      }
-
-      local COLS = 2 -- celdas por fila
-      local GAP  = "    "
-
-      -- Ancho de la etiqueta más larga, para que las columnas cuadren.
-      local label_w = 0
-      for _, it in ipairs(items) do
-        label_w = math.max(label_w, vim.api.nvim_strwidth(it.desc))
-      end
-
-      -- Construye las filas guardando, por celda, los offsets en BYTES
-      -- del icono y de la tecla dentro de la fila. Como el relleno que
-      -- añade dashboard para centrar son espacios (1 byte), luego basta
-      -- con sumar el ancho del sangrado para tener la posición real.
-      local rows, marks = {}, {}
-      for i = 1, #items, COLS do
-        local cells, row_marks, off = {}, {}, 0
-        for j = i, math.min(i + COLS - 1, #items) do
-          local it    = items[j]
-          local pad   = (" "):rep(label_w - vim.api.nvim_strwidth(it.desc))
-          local label = it.desc .. pad
-          local key   = ("[%s]"):format(it.key)
-          local cell  = it.icon .. label .. "  " .. key
-
-          table.insert(row_marks, {
-            icon_s = off,
-            icon_e = off + #it.icon,
-            key_s  = off + #it.icon + #label + 2,
-            key_e  = off + #it.icon + #label + 2 + #key,
-          })
-
-          table.insert(cells, cell)
-          off = off + #cell + #GAP
-        end
-        table.insert(rows, table.concat(cells, GAP))
-        table.insert(marks, row_marks)
-      end
-
-      -- Cada fila entra como un item del center. `action` es la del primer
-      -- elemento de la fila, que es lo que dispara <CR> al estar encima.
-      local center = {}
-      for idx, row in ipairs(rows) do
-        center[idx] = { desc = row, action = items[(idx - 1) * COLS + 1].action }
-      end
-
-      return {
-        theme = "doom",
-        config = {
-          header = {
-            "",
-            "  ████                    ████",
-            "  ██░░██                ██░░██",
-            "  ██░░████████████████████░░██",
-            "████████████████████████████████",
-            "████    ████████████████    ████",
-            "██░░░░░░████████████████░░░░░░██",
-            "██░░░░░░░░░░░░    ░░░░░░░░░░░░██",
-            "  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░",
-            "    ████░░░░░░░░░░░░░░░░████",
-            "  ██████░░░░░░░░░░░░░░░░██████    ░░░░",
-            "  ████████░░░░░░░░░░░░████████  ██░░░░░░",
-            "  ████    ████████    ████      ██████",
-            "",
-            "        Web · Mobile · Desktop · Systems · Data        ",
-            "",
-          },
-          center = center,
-          footer = { "", "  Clainev — ship fast, measure, iterate" },
-        },
-        -- Consumido por el autocmd de abajo, no por dashboard-nvim.
-        _grid = { items = items, rows = rows, marks = marks, cols = COLS },
-      }
-    end,
-    config       = function(_, opts)
-      local grid = opts._grid
-      opts._grid = nil
-      require("dashboard").setup(opts)
-
-      vim.api.nvim_create_autocmd("User", {
-        pattern = "DashboardLoaded",
-        group   = vim.api.nvim_create_augroup("DashboardGrid", { clear = true }),
-        callback = function()
-          local buf = vim.api.nvim_get_current_buf()
-          if vim.bo[buf].filetype ~= "dashboard" then
-            return
-          end
-
-          -- Teclas: doom sólo registra las de items con `key`, y aquí las
-          -- filas no lo llevan, así que las mapeamos todas nosotros.
-          for _, it in ipairs(grid.items) do
-            vim.keymap.set("n", it.key, function()
-              if type(it.action) == "function" then
-                it.action()
-              else
-                vim.cmd(it.action)
-              end
-            end, { buffer = buf, nowait = true, silent = true, desc = "Dashboard: " .. it.desc })
-          end
-
-          -- Colores por celda: el icono y la tecla de cada una, que si no
-          -- heredarían el highlight de la fila entera.
-          local ns    = vim.api.nvim_create_namespace("DashboardGrid")
-          local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-          for r, row in ipairs(grid.rows) do
-            for lnum, line in ipairs(lines) do
-              local s = line:find(row, 1, true)
-              if s then
-                local indent = s - 1
-                for _, m in ipairs(grid.marks[r]) do
-                  vim.api.nvim_buf_set_extmark(buf, ns, lnum - 1, indent + m.icon_s, {
-                    end_col = indent + m.icon_e,
-                    hl_group = "DashboardIcon",
-                  })
-                  vim.api.nvim_buf_set_extmark(buf, ns, lnum - 1, indent + m.key_s, {
-                    end_col = indent + m.key_e,
-                    hl_group = "DashboardKey",
-                  })
-                end
-                break
-              end
-            end
-          end
-        end,
-      })
-    end,
-  },
-
-  -- ── WHICH-KEY ─────────────────────────────────────────────────────
-  {
-    "folke/which-key.nvim",
-    event  = "VeryLazy",
-    opts   = { icons = { separator = "→", group = "+" } },
-    config = function(_, opts)
-      local wk = require "which-key"
-      wk.setup(opts)
-      wk.add {
-        { "<leader>f", group = "Find" },
-        { "<leader>g", group = "Git" },
-        { "<leader>l", group = "LSP" },
-        { "<leader>x", group = "Trouble" },
-        { "<leader>t", group = "Terminal/Tabs" },
-        { "<leader>a", group = "AI" },
-        { "<leader>d", group = "Debug" },
-        { "<leader>n", group = "Tests" },
-        { "<leader>s", group = "Split/Session" },
-        { "<leader>D", group = "Database" },
-        { "<leader>R", group = "REST (.http)" },
-        { "<leader>F", group = "Flutter" },
-      }
-    end,
-  },
-
-  -- ── INDENT GUIDES ─────────────────────────────────────────────────
-  {
-    "lukas-reineke/indent-blankline.nvim",
-    main  = "ibl",
-    event = { "BufReadPost", "BufNewFile" },
-    opts  = {
-      indent  = { char = "│" },
-      scope   = { char = "│" },
-      exclude = { filetypes = { "help", "lazy", "mason", "dashboard" } },
-    },
-  },
-
-  -- ── COLOR HIGHLIGHTER ─────────────────────────────────────────────
-  {
-    "NvChad/nvim-colorizer.lua",
-    event = { "BufReadPost", "BufNewFile" },
-    opts  = {
-      user_default_options = { tailwind = true, css = true, names = false },
-    },
-  },
-}
+vim.diagnostic.config({
+	underline = true,
+	update_in_insert = false,
+	virtual_text = {
+		spacing = 4,
+		source = "if_many",
+		prefix = "●",
+	},
+	severity_sort = true,
+	signs = {
+		text = {
+			[vim.diagnostic.severity.ERROR] = icons.diagnostics.Error,
+			[vim.diagnostic.severity.WARN] = icons.diagnostics.Warn,
+			[vim.diagnostic.severity.HINT] = icons.diagnostics.Hint,
+			[vim.diagnostic.severity.INFO] = icons.diagnostics.Info,
+		},
+	},
+})
